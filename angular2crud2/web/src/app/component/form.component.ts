@@ -1,81 +1,102 @@
-<div class="col-md-6 col-md-offset-3" *ngIf="action == 'add'">
-    <div class="panel panel-info">
-        <div class="panel-heading">
-            {{ title }}
-        </div>
+import { Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Params } from '@angular/router';
 
-        <form>
-        <div class="panel-body">
-            <div class="alert alert-success" *ngIf="infoMsg">
-                {{ infoMsg }}
-            </div>
-            <div class="alert alert-danger" *ngIf="errorMsg">
-                {{ errorMsg }}
-            </div>
-            <div class="form-group">
-                <label>Nama Murid</label>
-                <input type="text" name="nama" placeholder="Masukan Nama Murid" class="form-control" #nama>
-            </div>
-            <div class="form-group">
-                <label>Kelas</label>
-                <input type="text" name="kelas" placeholder="Masukan Kelas" class="form-control" #kelas>
-            </div>
-            <div class="form-group">
-                <label>Jurusan</label>
-                <input type="text" name="jurusan" placeholder="Masukan Jurusan" class="form-control" #jurusan>
-            </div>
-        </div>
+import { Sekolah } from '../Sekolah';
+import { SekolahService } from '../service/sekolah.service';
 
-        <div class="panel-footer">
-            <div class="row">
-                <div class="col-lg-12 text-right">
-                    <button type="button" (click)="addStudent(nama.value, kelas.value, jurusan.value)" class="btn btn-primary">Submit</button>
-                    <a href="#" (click)="goBack()" class="btn btn-warning">Kembali</a>
-                </div>
-            </div>
-        </div>
-        </form>
-    </div>
-</div>
 
-<div class="col-md-6 col-md-offset-3" *ngIf="action == 'edit'">
-    <div class="panel panel-info">
-        <div class="panel-heading">
-            {{ title }}
-        </div>
+@Component({
+    selector: 'form-component',
+    templateUrl: 'app/view/form.component.html'
+})
 
-        <form>
-        <div class="panel-body" *ngIf="student">
-            <div class="alert alert-success" *ngIf="infoMsg">
-                {{ infoMsg }}
-            </div>
-            <div class="alert alert-danger" *ngIf="errorMsg">
-                {{ errorMsg }}
-            </div>
-            <input type="hidden" name="id" [(ngModel)]="student.id">
+export class FormComponent implements OnInit{
+    title : String = '';
+    student : Sekolah;
+    action : String;
+    errorMsg : String;
+    infoMsg : String;
+    selectedId : number;
 
-            <div class="form-group">
-                <label>Nama Murid</label>
-                <input type="text" name="nama" placeholder="Masukan Nama Murid" class="form-control" [(ngModel)]="student.nama">
-            </div>
-            <div class="form-group">
-                <label>Kelas</label>
-                <input type="text" name="kelas" placeholder="Masukan Kelas" class="form-control" [(ngModel)]="student.kelas">
-            </div>
-            <div class="form-group">
-                <label>Jurusan</label>
-                <input type="text" name="jurusan" placeholder="Masukan Jurusan" class="form-control" [(ngModel)]="student.jurusan">
-            </div>
-        </div>
+    constructor(
+       private activeRoute : ActivatedRoute,
+       private location : Location,
+       private sekolahService : SekolahService
+    ){ }
 
-        <div class="panel-footer">
-            <div class="row">
-                <div class="col-lg-12 text-right">
-                    <button type="button" (click)="editStudent()" class="btn btn-primary">Submit</button>
-                    <a href="#" (click)="goBack()" class="btn btn-warning">Kembali</a>
-                </div>
-            </div>
-        </div>
-        </form>
-    </div>
-</div>
+    ngOnInit(){
+        this.activeRoute.params.forEach((param : Params) => {
+            let act = param['act'];
+            if(act == 'add'){
+                this.title = 'Add Student';
+                this.action = 'add';
+            }else{
+                let id = param['id'];
+
+                this.selectedId = id;
+                this.title = 'Edit Student';
+                this.action = 'edit';
+            }
+        });
+
+        if(this.action == 'edit') {
+            this.getData(this.selectedId);
+        }
+    }
+
+    getData(id : number) : void{
+        this.sekolahService.getStudent(id)
+            .subscribe(
+                students => this.student = students,
+                error => console.log(error)
+            );
+    }
+
+    goBack() : void{
+        this.location.back();
+    }
+
+    addStudent(nama : string, kelas : string, jurusan : string) : void{
+        nama = nama.trim();
+        kelas = kelas.trim();
+        jurusan = jurusan.trim();
+
+        if(!nama || !kelas || !jurusan){
+            this.errorMsg = 'Ada field yang belum terisi!';
+            return;
+        }
+
+        this.sekolahService.storeData(nama, kelas, jurusan)
+            .subscribe(
+                res => {
+                    this.errorMsg = '';
+
+                    if(JSON.parse(res).success == 'success'){
+                        this.infoMsg = 'Tambah data murid berhasil!';
+                    }
+                });
+    }
+
+    editStudent() : void{
+        let nama = this.student.nama;
+        let kelas = this.student.kelas;
+        let jurusan = this.student.jurusan;
+        let id = this.student.id;
+
+        if(!nama || !kelas || !jurusan){
+            this.errorMsg = 'Ada field yang belum terisi!';
+            return;
+        }
+
+        this.sekolahService.updateData(id, nama, kelas, jurusan)
+            .subscribe(
+                res => {
+                    this.errorMsg = '';
+
+                    if(JSON.parse(res).success == 'success'){
+                        this.infoMsg = 'Update data murid berhasil!';
+                    }
+                });
+    }
+}
