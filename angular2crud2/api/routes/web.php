@@ -14,3 +14,13 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::group(['middleware'=>'cors'],  function(){
+  Route::group(['prefix'=>'api/v1'], function(){
+    Route::get('siswa', 'SekolahController@index');
+    Route::get('siswa/{id}', 'SekolahController@show');
+    Route::post('siswa', 'SekolahController@store');
+    Route::post('siswa/delete', 'SekolahController@destroy');
+    Route::post('siswa/{id}', 'SekolahController@update');
+  });
+});
