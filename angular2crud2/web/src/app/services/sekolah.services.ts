@@ -3,12 +3,12 @@ import { Headers, Http, Response, RequestOptions } from '@angular/http';
 
 import { Sekolah } from '../Sekolah';
 import { Observable } from 'rxjs/observable';
-import 'rxjs/add/operator/map';
+import '../rxjs-operators';
 
 @Injectable()
 export class SekolahService {
     sekolahUrl : string = 'http://127.0.0.1:8000/api/v1/siswa';
-    tokenUrl : string = 'http://127.0.0.1:8000/get-token';
+    //tokenUrl : string = 'http://127.0.0.1:8000/get-token';
 
     constructor(
         private http : Http
@@ -25,10 +25,10 @@ export class SekolahService {
             .map(res => <Sekolah> res.json());
     }
 
-    getToken() : Observable<string> {
-        return this.http.get(this.tokenUrl)
-            .map(response => <string> response.json());
-    }
+    // getToken() : Observable<string> {
+    //     return this.http.get(this.tokenUrl)
+    //         .map(response => <string> response.json());
+    // }
 
     storeData(nama : string, kelas : string, jurusan : string) : Observable<string> {
         let body = JSON.stringify({ nama : nama, kelas : kelas, jurusan : jurusan});

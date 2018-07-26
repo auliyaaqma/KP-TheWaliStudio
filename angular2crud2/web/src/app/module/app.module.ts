@@ -27,7 +27,7 @@ import { SekolahService } from '../service/sekolah.service';
         {path: 'list', component: ListComponent},
         {path: 'form/:act', component: FormComponent},
         {path: 'form/:act/:id', component: FormComponent}
-        
+
     ])
 
 
